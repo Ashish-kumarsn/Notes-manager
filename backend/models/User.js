@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema(
+// The fix: Remove the duplicate 'new' keyword
+const userSchema = new mongoose.Schema( 
   {
     name: {
       type: String,
@@ -13,20 +14,33 @@ const userSchema = new mongoose.Schema(
       required: [true, "Email is required"],
       unique: true,
       lowercase: true,
-      match: [
-        /^\S+@\S+\.\S+$/,
-        "Please provide a valid email address",
-      ],
+      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address"],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters long"],
+      // Make password optional for OTP/Google users
+      required: false,
     },
+
+    /** --- Fields for OTP verification --- **/
+    isVerified: {
+      type: Boolean,
+      default: false, // becomes true only after OTP verification
+    },
+    otpCode: String, // hashed OTP (short-lived)
+    otpExpires: Date, // expiry time for the OTP
+
     role: {
       type: String,
-      enum: ["user", "admin"], // 👈 sirf yehi 2 roles valid
+      enum: ["user", "admin"],
       default: "user",
+    },
+
+    /** --- Field for Google login --- **/
+    googleId: {
+      type: String,
+      default: null, // Used to identify users who signed up via Google
     },
   },
   { timestamps: true }

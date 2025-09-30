@@ -1,7 +1,9 @@
-// seedAdmin.js
+
+// ============================================
+// seedAdmin.js - OTP Based Admin Creation
+// ============================================
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
 import readline from "readline";
 import User from "./models/User.js";
 
@@ -21,32 +23,37 @@ const seedAdmin = async () => {
     console.log("✅ Connected to DB");
 
     const adminEmail = (await askQuestion("👉 Enter admin email: ")).trim();
-    const adminPassword = (await askQuestion("👉 Enter admin password: ")).trim();
+    const adminName = (await askQuestion("👉 Enter admin name (default: Super Admin): ")).trim() || "Super Admin";
 
     rl.close();
 
-    if (!adminEmail || !adminPassword) {
-      console.log("⚠️ Email & password required!");
+    if (!adminEmail) {
+      console.log("⚠️ Email is required!");
       process.exit(1);
     }
 
+    // Check if admin already exists
     const adminExists = await User.findOne({ email: adminEmail });
     if (adminExists) {
       console.log("✅ Admin already exists with this email:", adminEmail);
+      console.log("Role:", adminExists.role);
       process.exit();
     }
 
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
+    // Create admin user (no password - OTP based)
     const adminUser = new User({
-      name: "Super Admin",
+      name: adminName,
       email: adminEmail,
-      password: hashedPassword,
       role: "admin",
+      isVerified: true, // Pre-verified so they can login immediately
     });
 
     await adminUser.save();
-    console.log("🎉 Admin user created:", adminEmail);
+    console.log("🎉 Admin user created successfully!");
+    console.log("📧 Email:", adminEmail);
+    console.log("👤 Name:", adminName);
+    console.log("🔐 Login Method: OTP-based (no password needed)");
+    console.log("\n💡 Admin will receive OTP on their email during login");
 
     await mongoose.disconnect();
     process.exit();

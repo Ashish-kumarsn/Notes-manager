@@ -6,12 +6,13 @@ import Notes from "./components/Notes";
 import AdminDashboard from "./components/AdminDashboard";
 import Navbar from "./components/Navbar";
 import AuthLayout from "./components/AuthLayout";
+import { setToken } from "./api"; // ✅ NEW: Import setToken
 import "./index.css";
 
 export default function App() {
   const [user, setUser] = useState(null);
 
-  // Check if user is logged in on app start
+  // ✅ FIXED: Check if user is logged in on app start AND initialize token
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
@@ -20,6 +21,7 @@ export default function App() {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
+        setToken(token); // ✅ NEW: Initialize axios headers with token
       } catch (error) {
         console.error("Error parsing user data:", error);
         // Clear invalid data
@@ -29,6 +31,7 @@ export default function App() {
     } else if (token) {
       // If only token exists, create minimal user object
       setUser({ token });
+      setToken(token); // ✅ NEW: Initialize axios headers with token
     }
   }, []);
 
@@ -36,6 +39,7 @@ export default function App() {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    setToken(null); // ✅ NEW: Clear token from axios headers
   };
 
   return (

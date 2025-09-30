@@ -1,11 +1,11 @@
 import express from "express";
 import Note from "../models/Note.js";
-import auth from "../middleware/auth.js";
+import authMiddleware from "../middleware/auth.js"; 
 
 const router = express.Router();
 
 // -------------------- CREATE NOTE --------------------
-router.post("/", auth, async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     const { title, description } = req.body;
     if (!title || !description) {
@@ -21,7 +21,7 @@ router.post("/", auth, async (req, res) => {
 });
 
 // -------------------- GET USER NOTES --------------------
-router.get("/", auth, async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const notes = await Note.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(notes);
@@ -32,7 +32,7 @@ router.get("/", auth, async (req, res) => {
 });
 
 // -------------------- UPDATE NOTE --------------------
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const { title, description } = req.body;
 
@@ -55,7 +55,7 @@ router.put("/:id", auth, async (req, res) => {
 });
 
 // -------------------- DELETE NOTE --------------------
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     // Find and delete the note belonging to the current user
     const note = await Note.findOneAndDelete({ _id: req.params.id, user: req.user.id });

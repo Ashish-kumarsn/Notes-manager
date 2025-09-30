@@ -1,8 +1,7 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 export default function AuthLayout({ children }) {
-  const nav = useNavigate();
   const location = useLocation();
   const isLogin = location.pathname === "/login";
 
@@ -15,16 +14,6 @@ export default function AuthLayout({ children }) {
 
         {/* Form content - Login ya Register form yahan render hoga */}
         {children}
-
-        <p className="text-center text-sm text-gray-600 mt-4">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span
-            onClick={() => nav(isLogin ? "/register" : "/login")}
-            className="text-indigo-600 hover:underline cursor-pointer"
-          >
-            {isLogin ? "Register" : "Login"}
-          </span>
-        </p>
       </div>
     </div>
   );
