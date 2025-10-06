@@ -10,11 +10,10 @@ const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
 const transporter = nodemailer.createTransport({
   host: EMAIL_HOST,
   port: Number(EMAIL_PORT) || 587,
-  // We use secure: false for port 587 (TLS). If using port 465, set secure: true
-  secure: false,
+  secure: Number(EMAIL_PORT) === 465, // true if port is 465
   auth: {
-    user: EMAIL_USER, // Your Gmail address (needs to match the address used to create the App Password)
-    pass: EMAIL_PASS, // The 16-character App Password
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
   },
 });
 
@@ -28,21 +27,15 @@ export async function sendOtpEmail(to, otp) {
     from: `"Notes App" <${EMAIL_USER}>`,
     to,
     subject: "Your Notes App Verification OTP",
-    // With this:
     text: `Your verification code is ${otp}. It expires in 10 minutes.`,
-    html: `
-  <p>Your verification code is <b>${otp}</b>. It expires in 10 minutes.</p>
-`,
+    html: `<p>Your verification code is <b>${otp}</b>. It expires in 10 minutes.</p>`,
   };
 
-  // 👇️ ADDED: Robust error handling for the email sending process
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${to}`);
+    console.log(`✅ Email sent successfully to ${to}`);
   } catch (error) {
-    // Log the detailed error to the backend console
-    console.error(`Error sending email to ${to}:`, error);
-    // Throw a specific error that the auth route can catch
+    console.error(`❌ Error sending email to ${to}:`, error);
     throw new Error("Failed to send verification email. Check transporter configuration.");
   }
 }
