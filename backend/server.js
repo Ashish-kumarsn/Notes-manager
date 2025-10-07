@@ -48,6 +48,6 @@ app.use("/api/admin", adminRoutes); // ⚙️ Admin panel
 app.get("/", (req, res) => res.send("Notes API is running..."));
 
 // ----------------- Server -----------------
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

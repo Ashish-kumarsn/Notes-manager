@@ -1,0 +1,64 @@
+
+# Docker Compose Configuration File
+# Links all services: React frontend, Node+Express backend, and MongoDB database
+
+version: "3.8"
+
+services:
+
+  # -----------------------------
+  # Backend Service (Node + Express)
+  # -----------------------------
+  backend:
+    build: ./backend
+    container_name: mern-backend
+    ports:
+      - "5000:5000"
+    # Loads runtime variables for backend (e.g., MONGODB_URI, JWT_SECRET, EMAIL_PASS)
+    # from the local file located inside the backend directory.
+    env_file:
+      - ./backend/.env
+    # NOTE: The root-level .env variables (like MONGO_URI, JWT_SECRET etc.)
+    # are automatically available to the backend service for runtime if they
+    # are NOT defined in ./backend/.env. This is standard Docker Compose behavior.
+    depends_on:
+      - mongo
+    restart: always
+
+  # -----------------------------
+  # Frontend Service (React + Nginx)
+  # -----------------------------
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # SECURED FIX: References the variable from the root-level .env file
+        # This keeps the sensitive ID out of the committed docker-compose.yml.
+        REACT_APP_GOOGLE_CLIENT_ID: ${REACT_APP_GOOGLE_CLIENT_ID}
+        # The API URL uses the service name for internal container communication.
+        REACT_APP_API_URL: http://localhost:5000/api
+    container_name: mern-frontend
+    ports:
+      - "3000:80"
+    # No env_file needed for frontend, as variables are passed during BUILD time via 'args'
+    depends_on:
+      - backend
+    restart: always
+
+  # -----------------------------
+  # MongoDB Service
+  # -----------------------------
+  mongo:
+    image: mongo:6
+    container_name: mern-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+# -----------------------------
+# Volumes Section (Persistent DB storage)
+# -----------------------------
+volumes:
+  mongo-data:
