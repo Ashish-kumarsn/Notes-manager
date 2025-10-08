@@ -1,0 +1,43 @@
+# Frotend Deployment 
+
+# define how k8s runs the react container 
+# it will pull the image from docker hub and run it in pods 
+# frontend pods will communicate with the backend pods using backend service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-frontend    # name of this deployment 
+  namespace: notes-manager
+  labels:
+    app: notes-frontend
+    tier: frontend
+spec:
+  replicas: 2    # run 2 pods for load balancing 
+  selector:
+    matchLabels:
+      app: notes-frontend   # must match the label below
+  template:
+    metadata:
+      labels:
+        app: notes-frontend
+    spec:
+      containers:
+      - name: notes-frontend
+        image: ashishkumarsn/notes-frontend:latest # react frontend image
+        ports:
+        - containerPort: 80   # port frontend container listen on
+
+        # environment variable to connect
+        env:
+        - name: REACT_APP_API_URI
+          value: "http://backend-service:5000"
+
+        # resources
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"

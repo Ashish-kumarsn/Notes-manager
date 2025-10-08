@@ -1,0 +1,45 @@
+# This file tell kubernetes how to run and manage backend container
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-backend  #name of this deployment 
+  namespace: notes-manager 
+  labels:
+    app: notes-backend  # helpful label for grouping 
+    tier: backend
+
+
+spec:
+  replicas: 2       # Number of pods running (for load balancing)
+  selector:
+    matchLabels:
+      app: notes-backend  #must match the label in the template below
+  template:
+    metadata:
+      labels:
+        app: notes-backend #label assigned to pods
+    spec:
+      containers:
+      - name: notes-backend # name for the container 
+        image: ashishkumarsn/notes-backend:latest
+        ports:
+        - containerPort: 5000   #The port backend app runs inside the container
+
+        #Environment variable
+        env:
+        - name: MONGO_URI
+          value: "mongodb://mongodb-service:27017/notesdb"
+        - name: PORT
+          value: "5000"
+        - name: NODE_ENV
+          value: "production"
+
+        # define resource request and limits
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+

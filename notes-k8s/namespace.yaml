@@ -1,0 +1,10 @@
+# Creates a separate namespace called notes-manager
+# Helps keep resources (frontend, backend , services ,ingress etc) organized
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: notes-manager
+  labels:
+    project: notes-manager
+    environment: local-demo

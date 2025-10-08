@@ -1,0 +1,77 @@
+# MongoDB deployment 
+
+# this defines how MongoDb runs inside the kubernetes cluster 
+# We will use official mongo image and persistent storage and set env variable
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment        
+  namespace: notes-manager
+  labels:
+    app: mongodb
+    tier: database
+
+spec:
+  replicas: 1                     # One MongoDB pod (enough for local demo)
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:6.0          # Official MongoDB image
+        ports:
+        - containerPort: 27017    # MongoDB default port
+        
+        # Environment variables for database init
+        # ⚠️ Original: Hardcoded credentials → unsafe for GitHub
+        # env:
+        # - name: MONGO_INITDB_ROOT_USERNAME
+        #   value: "admin"
+        # - name: MONGO_INITDB_ROOT_PASSWORD
+        #   value: "password"
+        # - name: MONGO_INITDB_DATABASE
+        #   value: "notesdb"
+
+        # ✅ Updated: Use Kubernetes Secret for safe credentials
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret        # Reference to Secret
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
+        - name: MONGO_INITDB_DATABASE
+          value: notesdb                 # Database name is okay to hardcode
+
+        # Volume mount (keeps data until pod restarts)
+        # ⚠️ Original: emptyDir → data lost on pod deletion
+        # volumeMounts:
+        # - name: mongo-storage
+        #   mountPath: /data/db
+
+        # ✅ Updated: Use PersistentVolumeClaim for real persistence
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /data/db
+
+      # Define the volume itself
+      # ⚠️ Original: emptyDir → temporary storage
+      # volumes:
+      # - name: mongo-storage
+      #   emptyDir: {}
+
+      # ✅ Updated: PersistentVolumeClaim
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc    # PVC provides real persistent storage

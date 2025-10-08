@@ -1,0 +1,23 @@
+# Frontned service 
+
+# This service exposes the frontend pods to other component inside the cluster
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: notes-manager
+  labels:
+    app: notes-frontend
+
+spec:
+  selector:
+    app: notes-frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80 
+    nodePort: 30080   # expose externally via this port (optional)
+  type: NodePort      # makes frontend accessible on local host via nodeport
+  

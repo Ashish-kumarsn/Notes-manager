@@ -1,0 +1,20 @@
+# Backend Service 
+
+# Frontend pods will use this service to communicate with backend
+# Without a service , the frontend have to talk individual pods directly
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: notes-manager # Namespace where backend pods live
+  labels:
+    app: notes-backend
+    tier: backend
+spec:
+  selector:
+    app: notes-backend # select all pods with this level
+  ports:
+    - port: 5000         #pods that all other pods inside cluster will use 
+      targetPort: 5000   #pods that the container listens on
+  type: ClusterIP
